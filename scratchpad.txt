@@ -1,0 +1,530 @@
+matrixMultipy( m1, m2, sizeof(m2), pPoints);
+for(int i=0;i<2;i++){
+    printf("{%f,%f,%f,%f}\r\n",pPoints[i][0],pPoints[i][1],pPoints[i][2],pPoints[i][3]);
+    //printf("{%f,%f}\r\n",pPoints[i][0],pPoints[i][1]);
+}
+
+// if(ellapsed == 0.0f)
+	// {
+	// 	//pd->system->resetElapsedTime();
+	// 	// pd->graphics->setFont(font);
+	// 	// pd->graphics->drawText("69", strlen("69"), kASCIIEncoding, x, y);
+	// 	// pd->sound->synth->playNote(projectile_sound, 700.f, 1.f, 0.1f, 0);
+	// }else{
+	// 	undrawCube(pd,(int)res,(int)res2);
+	// }
+	// ellapsed = pd->system->getElapsedTime();
+	
+	// res = sinf(ellapsed)*50;
+	// res2 = sinf(ellapsed)*45;
+	// //pd->system->logToConsole("%d",(int)res);
+
+	// draw1Cube(pd);
+	// drawCube(pd, (int)res, (int)res2);
+        
+	
+	// DrawCuboid(pd, mine, &cam);
+	// pd->system->drawFPS(0,0);
+
+	// mine->rotation_x=(pd->system->getCrankAngle() +90) * (3.14159 / 180);
+	// mine->rotation_y=pd->system->getCrankAngle() * (3.14159 / 180);
+	// mine->rotation_z=pd->system->getCrankAngle() * (3.14159 / 180);
+	// mine->rotation_x=(45.f *(3.14159 / 180));
+	// mine->rotation_y=(-35.f *(3.14159 / 180));
+	// mine->rotation_z=(30.f *(3.14159 / 180));
+	//mine->rotation_y=5.0f;
+	//mine->rotation_z=45.0f;
+	
+	// mine->x = pd->system->getCrankAngle() * (3.14159 / 180);
+	// mine->x = pd->system->getCrankAngle() * (3.14159 / 180);
+	//mine->depth= 100 + 10 * pd->system->getCrankAngle() * (3.14159 / 180);
+	
+	// float transMatrix[16];
+    // float tmp[16];
+	
+
+    // identityMatrix(transMatrix);
+    // rotateY(transMatrix, pd->system->getCrankAngle() * (3.14159 / 180), tmp);
+    // translate(tmp, 200, 120, 0, transMatrix);
+    // //rotateX(transMatrix, 0.f, tmp);
+    // //translate(tmp, 0, 50, 0, transMatrix);
+    // project(transMatrix, 2.0, SCREEN_WIDTH / SCREEN_HEIGHT, 0.1, 100.0, tmp);
+
+	// float transPoints[8][4];
+    // for (int i = 0; i < 8; i++) {
+	// 	float tmpP[4];
+    //     transformPoint(cubeCoords[i], tmp, transPoints[i]);
+    // }
+
+	// for (int i = 0; i < 8; i++) {
+    //     for (int j = 0; j < 8; j++) {
+    //         if (i == j)
+    //             continue;
+	// 			pd->graphics->drawLine(
+	// 				(int)transPoints[i][0],
+	// 				(int)transPoints[i][1],
+	// 				(int)transPoints[j][0],
+	// 				(int)transPoints[j][1],
+	// 				3,
+	// 				kColorBlack);
+	// 			//connectPoints(i,j, transPoints);
+    //         // SDL_RenderDrawLine(renderer, 
+    //         //         transPoints[i][0], transPoints[i][1], 
+    //         //         transPoints[j][0], transPoints[j][1]);
+    //     }
+    // }
+
+	// int i;
+	// for (i = 0; i < 4; i++)
+	// {
+	// 	connectPoints(i, (i + 1) % 4, ppoints);
+	// 	connectPoints(i + 4, ((i + 1) % 4) + 4, ppoints);
+	// 	connectPoints(i, i + 4, ppoints);
+	// }
+
+
+	
+
+	// for (int i = 0; i < 2; i++) {
+	// 	for (int j = 0; j < 4; j++) {
+	// 		pPoints[i][j] = 0;
+	// 		for (int k = 0; k < 4; k++) {
+	// 			pPoints[i][j] += m2[i][k] * m1[j][k];
+	// 		}
+	// 	}
+	// }
+	
+
+	// for(int i=0;i<8;i++) {
+	// 		float pp[4] = {cpoints[i][0], cpoints[i][1], cpoints[i][2], cpoints[i][3]};
+	// 		float result[4];
+	// 		projectPoint(2.5, SCREEN_WIDTH / SCREEN_HEIGHT, 0.1, 100.0, pp, &result);
+	// 		_scaled(&result);
+	// 		ppoints[i][0] = result[0];
+	// 		ppoints[i][1] = result[1];
+	// 		ppoints[i][2] = result[2];
+	// 		_translate(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2,0,&ppoints[i]);
+	// }
+
+
+
+    		// float x = -5.f;
+		// for(int i=0;i<10;i++){
+		// 	shape = shape_new_cuboid(1,0.2,1,-0.3f);
+		// 	cubenodes[i] = Scene3DNode_newChild(n);
+		// 	cubenodes2[i] = Scene3DNode_newChild(cubenodes[i]);
+		// 	Matrix3D tm = matrix_addTranslation(x+(float)i,0,0);
+		// 	Scene3DNode_addTransform(cubenodes, &tm);
+		// 	Scene3DNode_addShape(cubenodes2[i], shape);
+		// }
+
+		shape = shape_new_cuboid(1,0.2,1,-0.3f);
+		node1 = Scene3DNode_newChild(n);
+		node2 = Scene3DNode_newChild(node1);
+		Matrix3D tm = matrix_addTranslation(-5,0,0);
+		Scene3DNode_addTransform(node1, &tm);
+		Scene3DNode_addShape(node2, shape);
+
+//////////////////////////////
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "pd_api.h"
+#include "lcdpatterns.h"
+#include "mini3d.h"
+#include "3dmath.h"
+#include "shape.h"
+#include "scene.h"
+#include "3dhelper.h"
+
+static int update(void* userdata);
+const char* fontpath = "num";
+LCDFont* font = NULL;
+PlaydateAPI *pd;
+
+SoundChannel* sound_effects = NULL;
+PDSynth* projectile_sound = NULL;
+Scene3D* scene;
+Shape3D* shape;
+Shape3D* stackbox1;
+Shape3D* activebox1;
+
+Scene3DNode* n;
+Scene3DNode* rootNode;
+Scene3DNode* stackNode;
+Scene3DNode* activeNode;
+
+Point3D* p1;Point3D* p2;Point3D* p3;Point3D* p4;
+Scene3DNode* node1;
+Scene3DNode* node2;
+Matrix3D* rot;
+Matrix3D* rotn;
+
+Scene3DNode* cubenodestop[10];
+Scene3DNode* cubenodestop2[10];
+Scene3DNode* cubenodes[10];
+Scene3DNode* cubenodes2[10];
+Scene3DNode* cubenodesbottom[10];
+Scene3DNode* cubenodesbottom2[10];
+float r = 0.f;
+float ellapsed=0.f;
+float res=0.f;
+
+#ifdef _WINDLL
+__declspec(dllexport)
+#endif
+int eventHandler(PlaydateAPI* playdate, PDSystemEvent event, uint32_t arg)
+{
+	(void)arg; // arg is currently only used for event = kEventKeyPressed
+
+	if ( event == kEventInit )
+	{
+		pd = playdate;
+		const char* err;
+		font = pd->graphics->loadFont(fontpath, &err);
+		//pd->display->setRefreshRate(1);
+		
+		if ( font == NULL )
+			pd->system->error("%s:%i Couldn't load font %s: %s", __FILE__, __LINE__, fontpath, err);
+
+		// Note: If you set an update callback in the kEventInit handler, the system assumes the game is pure C and doesn't run any Lua code in the game
+		pd->system->setUpdateCallback(update, pd);
+
+		sound_effects = pd->sound->channel->newChannel();
+		projectile_sound = pd->sound->synth->newSynth();
+		pd->sound->channel->addSource(sound_effects, (SoundSource*)projectile_sound);
+		pd->sound->channel->setVolume(sound_effects, 1.f);
+
+		pd->sound->synth->setWaveform(projectile_sound, kWaveformSquare);
+		pd->sound->synth->setAttackTime(projectile_sound, 0.f);
+		pd->sound->synth->setDecayTime(projectile_sound, 0.f);
+		pd->sound->synth->setSustainLevel(projectile_sound, 1.f);
+		pd->sound->synth->setReleaseTime(projectile_sound, 0.1f);
+		pd->sound->synth->setVolume(projectile_sound, 1.f, 1.f);
+
+		mini3d_setRealloc(pd->system->realloc);
+
+		scene = scene_new();
+		scene_setCameraOrigin(scene, 0.f, 0.f, 6.f);
+		scene_setLight(scene, 0.2f, 0.8f, 0.4f);
+
+		rootNode = Scene3D_getRootNode(scene);
+		stackNode = Scene3DNode_newChild(rootNode);
+		activeNode = Scene3DNode_newChild(rootNode);
+
+		stackbox1 = shape_new_cuboid(1,0.2,1,-0.3f);
+		Scene3DNode_addShape(stackNode, stackbox1);
+		Matrix3D tm = matrix_addTranslation(0,1,0);
+		Scene3DNode_addTransform(stackNode, &tm);
+
+
+		activebox1 = shape_new_cuboid(1,0.2,1,-0.3f);
+		Scene3DNode_addShape(activeNode, activebox1);
+		
+
+		
+
+
+
+		// scene = scene_new();
+		// scene_setCameraOrigin(scene, 0.f, 0.f, 6.f);
+		// scene_setLight(scene, 0.2f, 0.8f, 0.4f);
+
+		// n = Scene3D_getRootNode(scene);
+
+		// Matrix3D tm = matrix_addTranslation(0,0,0);
+		// rotn = matrix_newRotation(60.f,1.f,1.1f,.5f);
+		// Scene3DNode_setTransform(n, rotn);
+		
+
+		// shape = shape_new_cuboid(1,0.2,1,-0.3f);
+		// node1 = Scene3DNode_newChild(n);
+		// node2 = Scene3DNode_newChild(node1);
+		// //Matrix3D tm = matrix_addTranslation(-5,0,0);
+		// //Scene3DNode_addTransform(node1, &tm);
+		// Scene3DNode_addShape(node2, shape);
+
+		// rot = matrix_newRotation(1.5f,1.f,1.f,0.3f);
+		
+		
+	}
+	
+	return 0;
+}
+
+#define TEXT_WIDTH 130
+#define TEXT_HEIGHT 16
+
+void DrawBackground(PlaydateAPI *pd)
+{
+    pd->graphics->clear(LCD_PATTERN_DITHER_GREY60);
+    pd->graphics->fillEllipse(-45, -65, 490, 370, 0.0, 0.0, LCD_PATTERN_DITHER_GREY50_ALT1);
+    pd->graphics->fillEllipse(-40, -60, 480, 360, 0.0, 0.0, LCD_PATTERN_DITHER_GREY45);
+    pd->graphics->fillEllipse(-35, -55, 470, 350, 0.0, 0.0, LCD_PATTERN_DITHER_GREY40);
+    pd->graphics->fillEllipse(-30, -50, 460, 340, 0.0, 0.0, LCD_PATTERN_DITHER_GREY35);
+    pd->graphics->fillEllipse(-25, -45, 450, 330, 0.0, 0.0, LCD_PATTERN_DITHER_GREY30);
+    pd->graphics->fillEllipse(-20, -40, 440, 320, 0.0, 0.0, LCD_PATTERN_DITHER_GREY25);
+    pd->graphics->fillEllipse(-15, -35, 430, 310, 0.0, 0.0, LCD_PATTERN_DITHER_GREY20);
+    pd->graphics->fillEllipse(-10, -30, 420, 300, 0.0, 0.0, LCD_PATTERN_DITHER_GREY15);
+    pd->graphics->fillEllipse(0, -20, 400, 280, 0.0, 0.0, LCD_PATTERN_DITHER_GREY10);
+    pd->graphics->fillEllipse(10, -10, 380, 260, 0.0, 0.0, LCD_PATTERN_DITHER_GREY05);
+    pd->graphics->fillEllipse(20, 0, 360, 240, 0.0, 0.0, kColorWhite);
+}
+
+float angle;
+Matrix3D tmm;
+static int update(void* userdata)
+{
+	PlaydateAPI* pd = userdata;
+	//DrawBackground(pd);
+
+	if(ellapsed == 0.0f)
+	{
+		pd->system->resetElapsedTime();
+		// pd->graphics->setFont(font);
+		// pd->graphics->drawText("69", strlen("69"), kASCIIEncoding, x, y);
+		pd->sound->synth->playNote(projectile_sound, 700.f, 1.f, 0.1f, 0);
+	}else{
+	}
+	ellapsed = pd->system->getElapsedTime();
+	
+	res = sinf(ellapsed)*5;
+
+	//tmm = matrix_addTranslation(res,0,0);
+	//Scene3DNode_setTransform(activeNode, &tmm);
+
+	//activebox1->points->x = res;
+
+	//activeNode->transform.dx = res;
+
+	angle = pd->system->getCrankChange();
+
+	//Scene3DNode_addTransform(stackNode, matrix_newRotation(angle,1.f,0.f,0.f));
+	Scene3DNode_addTransform(rootNode, matrix_newRotation(angle,1.f,0.f,0.f));
+	
+	
+
+	// Matrix3D tm = matrix_addTranslation(res,0,0);
+	// Scene3DNode_setTransform(node2, &tm);
+	
+	// Scene3DNode_addTransform(n, rot);
+	
+	//pd->system->logToConsole("%f\r",node1->transform.dx);
+	
+
+	Scene3D_draw(scene, pd->graphics->getFrame(), LCD_ROWSIZE);
+	pd->graphics->markUpdatedRows(0, LCD_ROWS-1);
+
+	pd->system->drawFPS(0,0);
+
+	return 1;
+}
+
+// float x = -5.f;
+		// for(int i=0;i<10;i++){
+		// 	shape = shape_new_cuboid(1,0.2,1,-0.3f);
+		// 	cubenodes[i] = Scene3DNode_newChild(n);
+		// 	cubenodes2[i] = Scene3DNode_newChild(cubenodes[i]);
+		// 	Matrix3D tm = matrix_addTranslation(-5.f+(float)i,0,0);
+		// 	Scene3DNode_addTransform(cubenodes[i], &tm);
+		// 	Scene3DNode_addShape(cubenodes2[i], shape);
+		// }
+
+		// for(int i=0;i<10;i++){
+		// 	shape = shape_new_cuboid(1,0.2,1,-0.3f);
+		// 	cubenodestop[i] = Scene3DNode_newChild(n);
+		// 	cubenodestop2[i] = Scene3DNode_newChild(cubenodestop[i]);
+		// 	Matrix3D tm = matrix_addTranslation(-5.f+(float)i,-2,0);
+		// 	Scene3DNode_addTransform(cubenodestop[i], &tm);
+		// 	Scene3DNode_addShape(cubenodestop2[i], shape);
+		// }
+
+		// for(int i=0;i<10;i++){
+		// 	shape = shape_new_cuboid(1,0.2,1,-0.3f);
+		// 	cubenodesbottom[i] = Scene3DNode_newChild(n);
+		// 	cubenodesbottom2[i] = Scene3DNode_newChild(cubenodesbottom[i]);
+		// 	Matrix3D tm = matrix_addTranslation(-5.f+(float)i,2,0);
+		// 	Scene3DNode_addTransform(cubenodesbottom[i], &tm);
+		// 	Scene3DNode_addShape(cubenodesbottom2[i], shape);
+		// }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "pd_api.h"
+#include "mini3d.h"
+#include "3dmath.h"
+#include "shape.h"
+#include "scene.h"
+#include "3dhelper.h"
+#include "game.h"
+
+static int update(void* userdata);
+const char* fontpath = "num";
+LCDFont* font = NULL;
+PlaydateAPI *pd;
+
+SoundChannel* sound_effects = NULL;
+PDSynth* projectile_sound = NULL;
+Scene3D* scene;
+Shape3D* shape;
+Shape3D* stackbox1;
+Shape3D* activebox1;
+
+Scene3DNode* n;
+Scene3DNode* rootNode;
+Scene3DNode* stackNode;
+Scene3DNode* activeNode;
+
+Matrix3D* rot;
+
+float r = 0.f;
+Matrix3D *crankRot;
+
+#ifdef _WINDLL
+__declspec(dllexport)
+#endif
+int eventHandler(PlaydateAPI* playdate, PDSystemEvent event, uint32_t arg)
+{
+	(void)arg; // arg is currently only used for event = kEventKeyPressed
+
+	if ( event == kEventInit )
+	{
+		InitGame(playdate);
+		playdate->display->setRefreshRate(30);
+		playdate->system->setUpdateCallback(Update, NULL);
+		return 0;
+		pd = playdate;
+		const char* err;
+		font = pd->graphics->loadFont(fontpath, &err);
+		//pd->display->setRefreshRate(1);
+		
+		if ( font == NULL )
+			pd->system->error("%s:%i Couldn't load font %s: %s", __FILE__, __LINE__, fontpath, err);
+
+		// Note: If you set an update callback in the kEventInit handler, the system assumes the game is pure C and doesn't run any Lua code in the game
+		pd->system->setUpdateCallback(update, pd);
+
+		sound_effects = pd->sound->channel->newChannel();
+		projectile_sound = pd->sound->synth->newSynth();
+		pd->sound->channel->addSource(sound_effects, (SoundSource*)projectile_sound);
+		pd->sound->channel->setVolume(sound_effects, 1.f);
+
+		pd->sound->synth->setWaveform(projectile_sound, kWaveformSquare);
+		pd->sound->synth->setAttackTime(projectile_sound, 0.f);
+		pd->sound->synth->setDecayTime(projectile_sound, 0.f);
+		pd->sound->synth->setSustainLevel(projectile_sound, 1.f);
+		pd->sound->synth->setReleaseTime(projectile_sound, 0.1f);
+		pd->sound->synth->setVolume(projectile_sound, 1.f, 1.f);
+
+		mini3d_setRealloc(pd->system->realloc);
+
+		scene = scene_new();
+		scene_setCameraOrigin(scene, 0.f, 5.f, 6.f);
+		scene_setLight(scene, 0.2f, 0.8f, 0.4f);
+
+		rootNode = Scene3D_getRootNode(scene);
+		stackNode = Scene3DNode_newChild(rootNode);
+		activeNode = Scene3DNode_newChild(rootNode);
+
+		stackbox1 = shape_new_cuboid(1,0.2,1,-0.5f);
+
+		//Vector3D v = { 0,-0.38,0};
+		//Scene3DNode_addShapeWithOffset(stackNode, stackbox1, v);
+		Scene3DNode_addShape(stackNode, stackbox1);
+		Matrix3D tm = matrix_addTranslation(0,-0.38,0);
+		Scene3DNode_addTransform(stackNode, &tm);
+
+
+		activebox1 = shape_new_cuboid(1,0.2,1,-0.3f);
+		Scene3DNode_addShape(activeNode, activebox1);
+
+		//Matrix3D tm2 = matrix_addTranslation(0.f,-1.f,0.f);
+		//Scene3DNode_addTransform(rootNode, &tm2);
+
+		//scene_setCameraOrigin(scene, 0.f, 0.f, 6.f);
+		
+		rot = matrix_newRotation(1.f,0.f,1.f,0.0f);
+		
+
+		crankRot = matrix_new();
+
+
+		pd->system->setPeripheralsEnabled(kAccelerometer);
+	}
+	
+	return 0;
+}
+int isFlipped=0;
+void flipCamera() {
+	if(isFlipped == 0){
+		isFlipped = 1;
+		pd->system->logToConsole("flipped");
+		scene_setCameraUp(scene, 0.f, 5.f, 6.f, 5.f,0.f,0.f);
+	} else {
+		isFlipped = 0;
+		scene_setCameraUp(scene, 0.f, 5.f, 6.f, 0.f,-1.f,0.f);
+	}
+}
+
+#define TEXT_WIDTH 130
+#define TEXT_HEIGHT 16
+
+float angle;
+float rotty = 0.f;
+Matrix3D tmm;
+float accelx;
+float accely;
+float accelz;
+float smoothing = 0.9f;
+float shiftx = 0.f;
+
+static int update(void* userdata)
+{
+	PDButtons pushed;
+	pd->system->getButtonState(NULL, &pushed, NULL);
+	
+	if ( pushed & kButtonA )
+		flipCamera();
+
+	pd->system->getAccelerometer(&accelx, &accely, &accelz);
+	//pd->system->logToConsole("Accel data: x(%f) y(%f) z(%f)\r", accelx, accely, accelz);
+	shiftx = smoothing * shiftx + (1-smoothing) * accelx;
+	//pd->system->logToConsole("shiftx: %f\r", shiftx);
+	//activebox1->points->x = res;
+
+	//activeNode->transform.dz = res;
+
+	angle = pd->system->getCrankChange();
+
+	matrix_updateRotation(crankRot, shiftx*90,0.f,0.f,1.f);
+	Scene3DNode_setTransform(rootNode, crankRot);
+
+	//Scene3DNode_addTransform(rootNode, matrix_newRotation(angle,0.f,0.f,1.f));
+	//matrix_updateRotation(crankRot, angle,0.f,0.f,1.f);
+	//Scene3DNode_addTransform(rootNode, crankRot);
+	//Scene3DNode_addTransform(rootNode, rot);
+
+	//Scene3DNode_addTransform(stackNode, rot);
+	
+	
+	rotty +=0.1f;
+	// Matrix3D tm = matrix_addTranslation(res,0,0);
+	// Scene3DNode_setTransform(node2, &tm);
+	
+	// Scene3DNode_addTransform(n, rot);
+	
+	//pd->system->logToConsole("%f\r",node1->transform.dx);
+	
+
+	return 1;
+}
+

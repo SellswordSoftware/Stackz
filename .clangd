@@ -1,0 +1,4 @@
+# Use the simulator build's CMake compilation database for source and headers.
+# It contains the Playdate SDK include path derived from PLAYDATE_SDK_PATH.
+CompileFlags:
+  CompilationDatabase: build/simulator

@@ -1,0 +1,5 @@
+name=Stackz
+author=Halfmonty
+description=A game of stacking blocks
+bundleID=com.panic.stackz
+imagePath=launcher

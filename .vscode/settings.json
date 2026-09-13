@@ -1,0 +1,16 @@
+{
+    "files.associations": {
+        "*.tcc": "c",
+        "deque": "c",
+        "string": "c",
+        "unordered_map": "c",
+        "vector": "c",
+        "system_error": "c",
+        "render.h": "c",
+        "3dmath.h": "c",
+        "shape.h": "c",
+        "stackz.h": "c",
+        "lcdpatterns.h": "c"
+    },
+    "cmake.configureOnOpen": false
+}
