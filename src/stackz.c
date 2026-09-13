@@ -133,7 +133,7 @@ static void resetStack(void) {
         ptr = ptr->next;
     } while (ptr != Game.StackzData.lastNode->next);
     addBoxToStack(0.f, 0.f, 1.f, 1.f);
-    
+
 }
 
 static void resetGame(void) {
@@ -150,6 +150,7 @@ static void resetGame(void) {
     targetBoxXScale = 1.f;
     targetBoxZScale = 1.f;
     addv = 0.f;
+    Game.StackzData.perfectCount = 0;
     node_resetTranform(activeNodeSubnode);
     resetStack();
 }
@@ -227,7 +228,30 @@ static void buttonA(void) {
     addBoxToStack(0.f,0.f,1.f,1.f);
 }
 
+#define PERFECT_TOLERANCE 0.15f
+#define GROW_AMOUNT 0.15f
+
+// After enough perfects, slightly widen the smaller axis so future
+// imperfect placements hurt less. Scales are cumulative multipliers on
+// the base full width (1.0 = full size), so multiply up by the ratio.
+static void growSmallerAxis(void) {
+    if (targetBoxXScale <= targetBoxZScale) {
+        float old = targetBoxXScale;
+        targetBoxXScale = old * (1.f + GROW_AMOUNT);
+        if (targetBoxXScale > 1.f)
+            targetBoxXScale = 1.f;
+    } else {
+        float old = targetBoxZScale;
+        targetBoxZScale = old * (1.f + GROW_AMOUNT);
+        if (targetBoxZScale > 1.f)
+            targetBoxZScale = 1.f;
+    }
+}
+
 static void buttonB(void) {
+    float difference;
+    int isPerfect = 0;
+
     if (direction == 0) {
         if (Game.StackzData.activeOscillator > (targetBoxDepth * 2.f) + targetBoxX || Game.StackzData.activeOscillator < -(targetBoxDepth*2.f)+targetBoxX) {
             Game.StackzData.gameover = 1;
@@ -236,41 +260,72 @@ static void buttonB(void) {
         sys->logToConsole("hit");
         Game.StackzData.score++;
 
-        float difference = Game.StackzData.activeOscillator - targetBoxX;
+        difference = Game.StackzData.activeOscillator - targetBoxX;
         if (difference < 0.f)
             difference = targetBoxX - Game.StackzData.activeOscillator;
 
-        float pdiff = (difference / (targetBoxDepth * 2.f));
-        float scale = 1.f - pdiff;
-        targetBoxXScale *= scale;
-        targetBoxX = (Game.StackzData.activeOscillator / 2.f) + (targetBoxX / 2.f);
+        isPerfect = (difference <= PERFECT_TOLERANCE);
 
-        addBoxToStack(targetBoxX, -targetBoxZ, targetBoxXScale, targetBoxZScale);
+        if (isPerfect) {
+            sys->logToConsole("perfect");
+            Game.StackzData.perfectCount++;
+            if (Game.StackzData.perfectCount >= 3) {
+                sys->logToConsole("grow");
+                Game.StackzData.perfectCount = 0;
+                growSmallerAxis();
+            }
+            // Perfect placement: land centered on the top box at full size.
+            addBoxToStack(targetBoxX, -targetBoxZ, targetBoxXScale, targetBoxZScale);
+        } else {
+            Game.StackzData.perfectCount = 0;
+            float pdiff = (difference / (targetBoxDepth * 2.f));
+            float scale = 1.f - pdiff;
+            targetBoxXScale *= scale;
+            targetBoxX = (Game.StackzData.activeOscillator / 2.f) + (targetBoxX / 2.f);
 
-        targetBoxDepth -= (difference/2.f);
-        
+            addBoxToStack(targetBoxX, -targetBoxZ, targetBoxXScale, targetBoxZScale);
+
+            targetBoxDepth -= (difference/2.f);
+        }
+
         updateActiveBlockSize(targetBoxX, -targetBoxZ, targetBoxXScale, targetBoxZScale);
 
     }
     else {
         if (Game.StackzData.activeOscillator > (targetBoxWidth * 2.f) + targetBoxZ || Game.StackzData.activeOscillator < -(targetBoxWidth * 2.f) + targetBoxZ) {
-            resetGame();
+            Game.StackzData.gameover = 1;
             return;
         }
         sys->logToConsole("hit");
         Game.StackzData.score++;
 
-        float difference = Game.StackzData.activeOscillator - targetBoxZ;
+        difference = Game.StackzData.activeOscillator - targetBoxZ;
         if (difference < 0.f)
             difference = targetBoxZ - Game.StackzData.activeOscillator;
-        float pdiff = (difference / (targetBoxDepth * 2.f));
-        float scale = 1.f - pdiff;
-        targetBoxZScale *= scale;
-        targetBoxZ = (Game.StackzData.activeOscillator / 2.f) + (targetBoxZ / 2.f);
 
-        addBoxToStack(targetBoxX, -targetBoxZ, targetBoxXScale, targetBoxZScale);
+        isPerfect = (difference <= PERFECT_TOLERANCE);
 
-        targetBoxWidth -= (difference / 2.f);
+        if (isPerfect) {
+            sys->logToConsole("perfect");
+            Game.StackzData.perfectCount++;
+            if (Game.StackzData.perfectCount >= 3) {
+                sys->logToConsole("grow");
+                Game.StackzData.perfectCount = 0;
+                growSmallerAxis();
+            }
+            // Perfect placement: land centered on the top box at full size.
+            addBoxToStack(targetBoxX, -targetBoxZ, targetBoxXScale, targetBoxZScale);
+        } else {
+            Game.StackzData.perfectCount = 0;
+            float pdiff = (difference / (targetBoxWidth * 2.f));
+            float scale = 1.f - pdiff;
+            targetBoxZScale *= scale;
+            targetBoxZ = (Game.StackzData.activeOscillator / 2.f) + (targetBoxZ / 2.f);
+
+            addBoxToStack(targetBoxX, -targetBoxZ, targetBoxXScale, targetBoxZScale);
+
+            targetBoxWidth -= (difference / 2.f);
+        }
 
         updateActiveBlockSize(targetBoxX, -targetBoxZ, targetBoxXScale, targetBoxZScale);
     }
@@ -281,36 +336,8 @@ static void buttonB(void) {
         direction = 0;
 
     sys->resetElapsedTime();
-    
+
     return;
-
-    if(Game.StackzData.activeOscillator > 2.f || Game.StackzData.activeOscillator < -2.f){
-        sys->logToConsole("missed\r");
-        resetGame();
-    } else {
-        if (Game.StackzData.activeOscillator < 0.1f && Game.StackzData.activeOscillator > -0.1f)
-            sys->logToConsole("perfect\r");
-
-        sys->logToConsole("hit\r");
-        
-        sys->resetElapsedTime();
-        Game.StackzData.score++;
-
-        float difference = Game.StackzData.activeOscillator;
-        //sys->logToConsole("difference: %f\r", (double)Game.StackzData.activeOscillator);
-
-        
-        if (direction == 0) {
-            float scale = (activeBoxDepth - (fabsf(difference)/2.f)) / activeBoxDepth;
-            addBoxToStack((Game.StackzData.activeOscillator / 2), 0.f, scale, 1.f);
-        }
-        else {
-            float scale = (activeBoxWidth - (fabsf(difference) / 2.f)) / activeBoxWidth;
-            addBoxToStack(0.f, (-Game.StackzData.activeOscillator / 2), 1.f, scale);
-        }
-
-        
-    }
 
 }
 
@@ -318,7 +345,7 @@ static PDButtons pushed;
 static PDButtons current;
 static void handleButtonPush(void) {
 	sys->getButtonState(&current, &pushed, NULL);
-	
+
 	if ( pushed & kButtonUp || current & kButtonUp )
 		buttonUp();
     if ( pushed & kButtonDown || current & kButtonDown )
@@ -400,7 +427,7 @@ static void displayGameOver(void) {
     if (progress < 1.f) {
         bounce = outBounce(progress);
         float animdif = gainmendy - ganimstarty;
-        float curros = animdif * bounce; 
+        float curros = animdif * bounce;
         //sys->logToConsole("progress: %f, bounce: %f, curros: %f", progress, bounce, curros);
 
         gfx->drawText("Game Over", strlen("Game Over"), kASCIIEncoding, SCREEN_WIDTH/2-(gameovertextwidth/2), curros - 20 );
@@ -433,7 +460,7 @@ void handleRotation(void) {
 static void zoomCameraWithCrank(void) {
     Game.StackzData.crankChange = sys->getCrankChange() / 50.f;
 
-    sys->logToConsole("shiftx: %f", (double)shiftx);
+    // sys->logToConsole("shiftx: %f", (double)shiftx);
 
     float rotty = shiftx * -5.f;
     zoom -= Game.StackzData.crankChange;
@@ -467,7 +494,7 @@ void updateStackz() {
         drawBackground();
         handleRotation();
         handleButtonPush();
-        
+
         setupOscillator();
         OscillateActiveNode();
 
@@ -482,11 +509,11 @@ void updateStackz() {
         displayGameOver();
 
         sys->getButtonState(NULL, &pushed, NULL);
-        
+
         if ( pushed ) {
             Game.StackzData.gameover = 0;
             resetGame();
         }
     }
-    
+
 }

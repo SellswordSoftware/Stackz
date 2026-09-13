@@ -74,6 +74,7 @@ typedef struct
         float crankChange;
         float activeOscillator;
         int score;
+        int perfectCount;
 
         int gameover;
 
