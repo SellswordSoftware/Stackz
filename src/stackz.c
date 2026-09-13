@@ -25,10 +25,6 @@ static RenderStyle globalStyle;
 static float leftrightrotation = 45.f;
 static float updownrotation = 0.f;
 
-static float activeBoxWidth = 1.f;
-static float activeBoxDepth = 1.f;
-static float targetBoxWidth = 1.f;
-static float targetBoxDepth = 1.f;
 static float targetBoxX = 0.f;
 static float targetBoxZ = 0.f;
 static float targetBoxXScale = 1.f;
@@ -147,10 +143,6 @@ static void resetGame(void) {
     Game.StackzData.stackBoxIndex = 0;
     sys->resetElapsedTime();
     direction = 0;
-    activeBoxDepth = 1.f;
-    activeBoxWidth = 1.f;
-    targetBoxDepth = 1.f;
-    targetBoxWidth = 1.f;
     targetBoxX = 0.f;
     targetBoxZ = 0.f;
     targetBoxXScale = 1.f;
@@ -259,7 +251,7 @@ static void buttonB(void) {
     int isPerfect = 0;
 
     if (direction == 0) {
-        if (Game.StackzData.activeOscillator > (targetBoxDepth * 2.f) + targetBoxX || Game.StackzData.activeOscillator < -(targetBoxDepth*2.f)+targetBoxX) {
+        if (Game.StackzData.activeOscillator > (targetBoxXScale * 2.f) + targetBoxX || Game.StackzData.activeOscillator < -(targetBoxXScale * 2.f) + targetBoxX) {
             Game.StackzData.gameover = 1;
             return;
         }
@@ -284,21 +276,20 @@ static void buttonB(void) {
             addBoxToStack(targetBoxX, -targetBoxZ, targetBoxXScale, targetBoxZScale);
         } else {
             Game.StackzData.perfectCount = 0;
-            float pdiff = (difference / (targetBoxDepth * 2.f));
+            float pdiff = difference / (targetBoxXScale * 2.f);
             float scale = 1.f - pdiff;
             targetBoxXScale *= scale;
             targetBoxX = (Game.StackzData.activeOscillator / 2.f) + (targetBoxX / 2.f);
 
             addBoxToStack(targetBoxX, -targetBoxZ, targetBoxXScale, targetBoxZScale);
 
-            targetBoxDepth -= (difference/2.f);
         }
 
         updateActiveBlockSize(targetBoxX, -targetBoxZ, targetBoxXScale, targetBoxZScale);
 
     }
     else {
-        if (Game.StackzData.activeOscillator > (targetBoxWidth * 2.f) + targetBoxZ || Game.StackzData.activeOscillator < -(targetBoxWidth * 2.f) + targetBoxZ) {
+        if (Game.StackzData.activeOscillator > (targetBoxZScale * 2.f) + targetBoxZ || Game.StackzData.activeOscillator < -(targetBoxZScale * 2.f) + targetBoxZ) {
             Game.StackzData.gameover = 1;
             return;
         }
@@ -323,14 +314,13 @@ static void buttonB(void) {
             addBoxToStack(targetBoxX, -targetBoxZ, targetBoxXScale, targetBoxZScale);
         } else {
             Game.StackzData.perfectCount = 0;
-            float pdiff = (difference / (targetBoxWidth * 2.f));
+            float pdiff = difference / (targetBoxZScale * 2.f);
             float scale = 1.f - pdiff;
             targetBoxZScale *= scale;
             targetBoxZ = (Game.StackzData.activeOscillator / 2.f) + (targetBoxZ / 2.f);
 
             addBoxToStack(targetBoxX, -targetBoxZ, targetBoxXScale, targetBoxZScale);
 
-            targetBoxWidth -= (difference / 2.f);
         }
 
         updateActiveBlockSize(targetBoxX, -targetBoxZ, targetBoxXScale, targetBoxZScale);
