@@ -30,6 +30,7 @@ typedef enum
 
 struct Node {
     Scene3DNode *scene3DNode;
+    float restingColorBias;
     struct Node *next;
 };
 

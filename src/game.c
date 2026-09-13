@@ -33,6 +33,8 @@ static void initCircularLinkedListOfStack(void) {
 	for (int i = 0; i < STACKMAX; i++) {
 		struct Node* node;
 		node = (struct Node*)malloc(sizeof(struct Node));
+		node->scene3DNode = NULL;
+		node->restingColorBias = 0.f;
 		if (i == 0) {
 			Game.StackzData.firstNode = node;
 			temp = node;

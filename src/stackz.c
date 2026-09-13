@@ -9,6 +9,7 @@
 #include "float.h"
 
 #define BORDER
+#define TOP_BOX_COLOR_BIAS 0.f
 
 static Scene3D *scene;
 static Scene3DNode *rootNode;
@@ -44,10 +45,14 @@ float getColorFromIndex(int index) {
 Vector3D v = { 0.f,0.f,0.f };
 float addv = 0;
 static void addBoxToStack(float x, float z, float scalex, float scalez) {
+    struct Node *previousTop = Game.StackzData.currentNode;
+
+    Scene3DNode_setColorBias(previousTop->scene3DNode, previousTop->restingColorBias);
     Game.StackzData.currentNode = Game.StackzData.currentNode->next;
     node_resetTranform(Game.StackzData.currentNode->scene3DNode);
-    Game.StackzData.currentNode->scene3DNode->isVisible = 1;
-    Game.StackzData.currentNode->scene3DNode->colorBias = getColorFromIndex(Game.StackzData.stackBoxIndex);
+    Scene3DNode_setVisible(Game.StackzData.currentNode->scene3DNode, 1);
+    Game.StackzData.currentNode->restingColorBias = getColorFromIndex(Game.StackzData.stackBoxIndex);
+    Scene3DNode_setColorBias(Game.StackzData.currentNode->scene3DNode, TOP_BOX_COLOR_BIAS);
     addv += 0.5f;
     matrix_scaleByAndAddTranslation(Game.StackzData.currentNode->scene3DNode, scalex, 1.f, scalez, x, addv, z);
     Game.StackzData.stackNodeMatrix = matrix_addTranslation(0.f, -0.5f, 0.f);
@@ -113,12 +118,14 @@ static void initStack(void) {
         Shape3D *shape = shape_new_cuboid(1.f,0.25f,1.f,0.0f);
         Scene3DNode_addShape(ptr->scene3DNode, shape);
         Scene3DNode_setVisible(ptr->scene3DNode, 0);
+        ptr->restingColorBias = getColorFromIndex(0);
 
         ptr = ptr->next;
     } while (ptr != Game.StackzData.lastNode->next);
     Game.StackzData.currentNode = Game.StackzData.firstNode;
 
     Scene3DNode_setVisible(ptr->scene3DNode, 1);
+    Scene3DNode_setColorBias(ptr->scene3DNode, TOP_BOX_COLOR_BIAS);
     Game.StackzData.stackNodeMatrix = matrix_addTranslation(0,-0.5,0);
     stackNodeMatrix = &Game.StackzData.stackNodeMatrix;
     Scene3DNode_addTransform(stackParentNode, stackNodeMatrix);
@@ -136,7 +143,9 @@ static void resetStack(void) {
     Game.StackzData.stackNodeMatrix = matrix_addTranslation(0.f, -0.5f, 0.f);
     Scene3DNode_setTransform(stackParentNode, &Game.StackzData.stackNodeMatrix);
     Game.StackzData.currentNode = Game.StackzData.firstNode;
+    Game.StackzData.currentNode->restingColorBias = getColorFromIndex(0);
     Scene3DNode_setVisible(Game.StackzData.currentNode->scene3DNode, 1);
+    Scene3DNode_setColorBias(Game.StackzData.currentNode->scene3DNode, TOP_BOX_COLOR_BIAS);
 
 }
 
