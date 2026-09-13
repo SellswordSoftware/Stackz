@@ -17,6 +17,11 @@
 #define GRAVITY_DEAD_ZONE 0.08f
 #define GRAVITY_RESPONSE 0.12f
 #define PI 3.14159265358979323846f
+#define SCORE_BITMAP_WIDTH 128
+#define SCORE_BITMAP_HEIGHT 24
+#define SCORE_TOP_DISTANCE 92.f
+#define GAME_OVER_BITMAP_PADDING 4
+#define GAME_OVER_SCREEN_MARGIN 8.f
 
 static Scene3D *scene;
 static Scene3DNode *rootNode;
@@ -51,6 +56,11 @@ static float perfectRingZScale = 1.f;
 static float gravityUpX = 0.f;
 static float gravityUpY = -1.f;
 static float gravityUpAngle = -PI / 2.f;
+static LCDBitmap *scoreBitmap;
+static LCDBitmap *gameOverBitmap;
+static int gameOverBitmapWidth;
+static int renderedScore;
+static int scoreBitmapNeedsUpdate = 1;
 
 static float zoom = 5.f;
 
@@ -175,6 +185,27 @@ static void initDataValues(void) {
     Game.StackzData.updownMatrix = matrix_new();
 }
 
+static void initUiBitmaps(void) {
+    scoreBitmap = gfx->newBitmap(SCORE_BITMAP_WIDTH, SCORE_BITMAP_HEIGHT, kColorClear);
+
+    const char gameOverText[] = "Game Over";
+    int textWidth = gfx->getTextWidth(Game.font20, gameOverText, sizeof(gameOverText) - 1, kASCIIEncoding, 0);
+    int textHeight = gfx->getFontHeight(Game.font20);
+    gameOverBitmapWidth = textWidth + GAME_OVER_BITMAP_PADDING * 2;
+    int gameOverBitmapHeight = textHeight + GAME_OVER_BITMAP_PADDING * 2;
+
+    gameOverBitmap = gfx->newBitmap(gameOverBitmapWidth, gameOverBitmapHeight, kColorClear);
+    if (scoreBitmap == NULL || gameOverBitmap == NULL)
+        sys->error("%s:%i Couldn't create UI bitmaps", __FILE__, __LINE__);
+
+    gfx->pushContext(gameOverBitmap);
+    gfx->clear(kColorClear);
+    gfx->setFont(Game.font20);
+    gfx->drawText(gameOverText, sizeof(gameOverText) - 1, kASCIIEncoding,
+        GAME_OVER_BITMAP_PADDING, GAME_OVER_BITMAP_PADDING);
+    gfx->popContext();
+}
+
 static void initActiveBox(void) {
     activeBox = Game.StackzData.activeBox = shape_new_cuboid(1.f,0.25f,1.f,-0.1f);
 	Scene3DNode_addShape(activeNodeSubnode, activeBox);
@@ -250,6 +281,7 @@ static void resetGame(void) {
 // Scene Init
 void initStackzSceneData(void) {
     initDataValues();
+    initUiBitmaps();
     initSceneAndCamera();
     initNodes();
     initActiveBox();
@@ -421,7 +453,6 @@ static void draw(void) {
 }
 
 static char score[12];
-int scorewidth = 0;
 
 static int formatScore(int value) {
     char digits[10];
@@ -444,11 +475,39 @@ static int formatScore(int value) {
     return length;
 }
 
+static int uiOrientation(void) {
+    int orientation = (int)floorf((gravityUpAngle + PI / 2.f) / (PI / 2.f) + 0.5f);
+    orientation %= 4;
+    if (orientation < 0)
+        orientation += 4;
+    return orientation;
+}
+
 static void displayScore(void) {
-    gfx->setFont(Game.font14);
-    int scoreLength = formatScore(Game.StackzData.score);
-    scorewidth = gfx->getTextWidth(Game.font, score, scoreLength, kASCIIEncoding, 0);
-    gfx->drawText(score, scoreLength, kASCIIEncoding, SCREEN_WIDTH/2-(scorewidth/2), 15);
+    if (scoreBitmapNeedsUpdate || renderedScore != Game.StackzData.score) {
+        int scoreLength = formatScore(Game.StackzData.score);
+        int scoreWidth = gfx->getTextWidth(Game.font14, score, scoreLength, kASCIIEncoding, 0);
+        int scoreHeight = gfx->getFontHeight(Game.font14);
+
+        gfx->pushContext(scoreBitmap);
+        gfx->clear(kColorClear);
+        gfx->setFont(Game.font14);
+        gfx->drawText(score, scoreLength, kASCIIEncoding,
+            (SCORE_BITMAP_WIDTH - scoreWidth) / 2,
+            (SCORE_BITMAP_HEIGHT - scoreHeight) / 2);
+        gfx->popContext();
+
+        renderedScore = Game.StackzData.score;
+        scoreBitmapNeedsUpdate = 0;
+    }
+
+    static const int topX[] = { 0, 1, 0, -1 };
+    static const int topY[] = { -1, 0, 1, 0 };
+    int orientation = uiOrientation();
+    float rotationDegrees = orientation * 90.f;
+    int scoreX = (int)(SCREEN_WIDTH / 2.f + topX[orientation] * SCORE_TOP_DISTANCE);
+    int scoreY = (int)(SCREEN_HEIGHT / 2.f + topY[orientation] * SCORE_TOP_DISTANCE);
+    gfx->drawRotatedBitmap(scoreBitmap, scoreX, scoreY, rotationDegrees, 0.5f, 0.5f, 1.f, 1.f);
 }
 
 static float outBounce(float x) {
@@ -469,29 +528,30 @@ static float outBounce(float x) {
     }
 }
 
-int gameovertextwidth = 0;
-float startofGanim = 0.f;
 float durationofGainm = 2.f;
-float ganimstarty = 0.f;
-float gainmendy = SCREEN_HEIGHT / 2 + 20;
 static void displayGameOver(void) {
     if (animStarted == 0) {
         sys->resetElapsedTime();
         animStarted = 1;
     }
-    gfx->setFont(Game.font20);
-    gameovertextwidth = gfx->getTextWidth(Game.font20, "Game Over", strlen("Game Over"),kASCIIEncoding,0);
+
     float progress = sys->getElapsedTime() / durationofGainm;
+    float scale = 1.f;
     if (progress < 1.f) {
         bounce = outBounce(progress);
-        float animdif = gainmendy - ganimstarty;
-        float curros = animdif * bounce;
-        //sys->logToConsole("progress: %f, bounce: %f, curros: %f", progress, bounce, curros);
-
-        gfx->drawText("Game Over", strlen("Game Over"), kASCIIEncoding, SCREEN_WIDTH/2-(gameovertextwidth/2), curros - 20 );
-    } else {
-        gfx->drawText("Game Over", strlen("Game Over"), kASCIIEncoding, SCREEN_WIDTH/2-(gameovertextwidth/2), SCREEN_HEIGHT / 2);
+        scale = 0.2f + 0.8f * bounce;
     }
+
+    int orientation = uiOrientation();
+    float availableTextLength = orientation % 2 == 0 ? SCREEN_WIDTH : SCREEN_HEIGHT;
+    float fitScale = (availableTextLength - GAME_OVER_SCREEN_MARGIN * 2.f) / gameOverBitmapWidth;
+    if (fitScale > 1.f)
+        fitScale = 1.f;
+    scale *= fitScale;
+
+    float rotationDegrees = orientation * 90.f;
+    gfx->drawRotatedBitmap(gameOverBitmap, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2,
+        rotationDegrees, 0.5f, 0.5f, scale, scale);
 }
 
 
@@ -506,10 +566,10 @@ static void handleRotation(void) {
 
     // When the device is nearly face-up, gravity has no stable screen direction.
     if (magnitude >= GRAVITY_DEAD_ZONE) {
-#if defined(TARGET_SIMULATOR)
-        desiredUpAngle = atan2f(-accely, -accelx);
-#else
+#if defined(TARGET_PLAYDATE)
         desiredUpAngle = atan2f(accely, accelx);
+#else
+        desiredUpAngle = atan2f(-accely, -accelx);
 #endif
     }
 
@@ -569,6 +629,7 @@ void updateStackz() {
         draw();
     } else {
         drawBackground();
+        handleRotation();
         displayScore();
         draw();
         displayGameOver();
