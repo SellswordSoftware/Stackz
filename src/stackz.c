@@ -31,6 +31,8 @@ static float targetBoxXScale = 1.f;
 static float targetBoxZScale = 1.f;
 static int isFirstLoop = 0;
 static int direction = 0;
+static int animStarted = 0;
+static float bounce = 0.f;
 
 static float zoom = 5.f;
 
@@ -149,6 +151,8 @@ static void resetGame(void) {
     targetBoxZScale = 1.f;
     addv = 0.f;
     Game.StackzData.perfectCount = 0;
+    animStarted = 0;
+    bounce = 0.f;
     node_resetTranform(activeNodeSubnode);
     resetStack();
 }
@@ -426,9 +430,7 @@ static float outBounce(float x) {
 }
 
 int gameovertextwidth = 0;
-float bounce = 0.f;
 float startofGanim = 0.f;
-int animStarted = 0;
 float durationofGainm = 2.f;
 float ganimstarty = 0.f;
 float gainmendy = SCREEN_HEIGHT / 2 + 20;
