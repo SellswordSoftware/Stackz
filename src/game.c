@@ -24,6 +24,7 @@ static void initFont(void) {
 	Game.font40 = gfx->loadFont(fontPath40, &err);
 	if (Game.font40 == NULL)
 		sys->error("%s:%i Couldn't load font %s: %s", __FILE__, __LINE__, fontPath40, err);
+	Game.font = Game.font14;
 	gfx->setFont(Game.font14);
 }
 

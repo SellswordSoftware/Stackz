@@ -149,6 +149,7 @@ static void resetGame(void) {
     targetBoxZ = 0.f;
     targetBoxXScale = 1.f;
     targetBoxZScale = 1.f;
+    addv = 0.f;
     node_resetTranform(activeNodeSubnode);
     resetStack();
 }
@@ -394,7 +395,7 @@ static void displayGameOver(void) {
         animStarted = 1;
     }
     gfx->setFont(Game.font20);
-    gameovertextwidth = gfx->getTextWidth(Game.font, "Game Over", strlen("Game Over"),kASCIIEncoding,0);
+    gameovertextwidth = gfx->getTextWidth(Game.font20, "Game Over", strlen("Game Over"),kASCIIEncoding,0);
     float progress = sys->getElapsedTime() / durationofGainm;
     if (progress < 1.f) {
         bounce = outBounce(progress);
