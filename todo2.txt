@@ -1,9 +1,9 @@
 Todo
 -------------
-[] Expand block after 5 perfects
-[] left/right should continue turning if held
-[] accelerometer to turn game sideways
-[] speed up after 15 points up to a maximum
+[x] Expand block after 3 perfects
+[x] left/right should continue turning if held
+[x] accelerometer to turn game sideways
+[x] speed up after 15 points up to a maximum
 [] invert colors
 [] animate excess block dropping away or disappearing
 [] syth / midi music for gameplay
@@ -11,7 +11,7 @@ Todo
 [] sfx for miss
 [] sfx for perfect
 [] Menu
-[] Game Over screen
+[x] Game Over screen
 [] high score
 [] animated card
 [] animated startup

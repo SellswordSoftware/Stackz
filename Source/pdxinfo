@@ -1,5 +1,7 @@
 name=Stackz
-author=Halfmonty
+author=SellswordSoftwareLLC
 description=A game of stacking blocks
-bundleID=com.panic.stackz
+bundleID=com.sellsword.stackz
 imagePath=launcher
+version=0.1.0
+buildNumber=1

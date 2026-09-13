@@ -19,7 +19,7 @@ mechanics
 [x] use a camera to enable changing perspective? 
 [x] determine overlap of a placed cuboid to the one beneath it
 [x] use crank to change perspective
-[] use accelerometer to change perspective
+[x] use accelerometer to change perspective
 [x] camera centers on last stacked cuboid
 [x] perfect stacks emit a ring or particles
 [x] non perfect stacks shrink the cuboid to fit on the one below

@@ -22,6 +22,9 @@
 #define SCORE_TOP_DISTANCE 92.f
 #define GAME_OVER_BITMAP_PADDING 4
 #define GAME_OVER_SCREEN_MARGIN 8.f
+#define SCORE_PER_SPEED_LEVEL 15
+#define OSCILLATION_SPEED_PER_LEVEL 0.1f
+#define OSCILLATION_START_PHASE 2.f
 
 static Scene3D *scene;
 static Scene3DNode *rootNode;
@@ -156,7 +159,7 @@ static void updatePerfectRing(void) {
 static void initSceneAndCamera(void) {
     scene = Game.StackzData.scene = scene_new();
     scene_setCameraOrigin(scene, 0.f, zoom*1.f, zoom*1.2f);
-	scene_setLight(scene, 0.2f, 0.8f, 0.4f);
+    scene_setLight(scene, -0.7f, 0.8f, 0.3f);
     sys->setPeripheralsEnabled(kAccelerometer);
 }
 
@@ -349,8 +352,10 @@ static void buttonRight(void) {
     Scene3DNode_addTransform(rootNode, Game.StackzData.crankMatrix);
 }
 
+static void buttonB(void);
+
 static void buttonA(void) {
-    addBoxToStack(0.f,0.f,1.f,1.f);
+    buttonB();
 }
 
 #define PERFECT_TOLERANCE 0.15f
@@ -433,7 +438,9 @@ static void handleButtonPush(void) {
 }
 
 static void setupOscillator(void) {
-    Game.StackzData.ellapsed = (sys->getElapsedTime() +2.f) * 1.f;
+    int speedLevel = Game.StackzData.score / SCORE_PER_SPEED_LEVEL;
+    float oscillationSpeed = 1.f + speedLevel * OSCILLATION_SPEED_PER_LEVEL;
+    Game.StackzData.ellapsed = OSCILLATION_START_PHASE + sys->getElapsedTime() * oscillationSpeed;
     Game.StackzData.activeOscillator = sinf(Game.StackzData.ellapsed)*3.f;
 }
 

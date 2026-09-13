@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
 
-./bp.sh & ./bs.sh
+set -euo pipefail
+
+./bp.sh
+./bs.sh
 ./run.sh
