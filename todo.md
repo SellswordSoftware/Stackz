@@ -17,14 +17,14 @@ mechanics
 [x] ease the creation of cuboids, width, depth, x y coord from center
 [x] determine and draw faces, 3 faces with the highest average z should be forward facing
 [x] use a camera to enable changing perspective? 
-[] determine overlap of a placed cuboid to the one beneath it
+[x] determine overlap of a placed cuboid to the one beneath it
 [x] use crank to change perspective
 [] use accelerometer to change perspective
 [x] camera centers on last stacked cuboid
-[] perfect stacks emit a ring or particles
-[] non perfect stacks shrink the cuboid to fit on the one below
-[] remainder cuboid is created, falls off screen and is then freed
-[] score = number of items on stack, update UI
+[x] perfect stacks emit a ring or particles
+[x] non perfect stacks shrink the cuboid to fit on the one below
+[x] remainder cuboid is created, falls off screen and is then freed
+[x] score = number of items on stack, update UI
 
 
 Features:

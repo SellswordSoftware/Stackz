@@ -628,7 +628,7 @@ drawWireframe(Scene3D* scene, ShapeInstance* shape, uint8_t* bitmap, int rowstri
 {
 	int f;
 	RenderStyle style = shape->renderStyle;
-	uint8_t* color = patterns[5];
+	uint8_t* color = (style & kRenderWireframeWhite) ? patterns[32] : patterns[0];
 
 	for ( f = 0; f < shape->nFaces; ++f )
 	{

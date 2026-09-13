@@ -10,6 +10,10 @@
 
 #define BORDER
 #define TOP_BOX_COLOR_BIAS 0.f
+#define PERFECT_RING_DURATION_FRAMES 12
+#define PERFECT_RING_GROWTH 1.75f
+#define PERFECT_RING_Y -0.255f
+#define PERFECT_RING_WHITE_SCALE 0.92f
 
 static Scene3D *scene;
 static Scene3DNode *rootNode;
@@ -17,6 +21,8 @@ static Scene3DNode *rotationNode;
 static Scene3DNode *activeNode;
 static Scene3DNode *activeNodeSubnode;
 static Scene3DNode *stackParentNode;
+static Scene3DNode *perfectRingBlackNode;
+static Scene3DNode *perfectRingWhiteNode;
 
 static Shape3D *activeBox;
 
@@ -34,6 +40,11 @@ static int isFirstLoop = 0;
 static int direction = 0;
 static int animStarted = 0;
 static float bounce = 0.f;
+static int perfectRingFramesRemaining = 0;
+static float perfectRingX = 0.f;
+static float perfectRingZ = 0.f;
+static float perfectRingXScale = 1.f;
+static float perfectRingZScale = 1.f;
 
 static float zoom = 5.f;
 
@@ -63,6 +74,67 @@ static void addBoxToStack(float x, float z, float scalex, float scalez) {
 static void updateActiveBlockSize(float x, float z, float scalex, float scalez) {
     node_resetTranform(activeNodeSubnode);
     matrix_scaleByAndAddTranslation(activeNodeSubnode, scalex, 1.f, scalez, x, 0.f, z);
+}
+
+static void initPerfectRing(void) {
+    Point3D topLeft = { -1.f, 0.f, 1.f };
+    Point3D topRight = { 1.f, 0.f, 1.f };
+    Point3D bottomRight = { 1.f, 0.f, -1.f };
+    Point3D bottomLeft = { -1.f, 0.f, -1.f };
+    Shape3D *ring = shape_new();
+
+    Shape3D_addFace(ring, &topLeft, &topRight, &bottomRight, &bottomLeft, 0.f);
+    perfectRingBlackNode = Scene3DNode_newChild(rotationNode);
+    Scene3DNode_addShape(perfectRingBlackNode, ring);
+    Scene3DNode_setRenderStyle(perfectRingBlackNode, kRenderWireframe | kRenderWireframeBack);
+    Scene3DNode_setVisible(perfectRingBlackNode, 0);
+
+    perfectRingWhiteNode = Scene3DNode_newChild(rotationNode);
+    Scene3DNode_addShape(perfectRingWhiteNode, ring);
+    Scene3DNode_setRenderStyle(perfectRingWhiteNode, kRenderWireframe | kRenderWireframeBack | kRenderWireframeWhite);
+    Scene3DNode_setVisible(perfectRingWhiteNode, 0);
+}
+
+static void emitPerfectRing(void) {
+    perfectRingX = targetBoxX;
+    perfectRingZ = -targetBoxZ;
+    perfectRingXScale = targetBoxXScale;
+    perfectRingZScale = targetBoxZScale;
+    perfectRingFramesRemaining = PERFECT_RING_DURATION_FRAMES;
+    Scene3DNode_setVisible(perfectRingBlackNode, 1);
+    Scene3DNode_setVisible(perfectRingWhiteNode, 1);
+}
+
+static void updatePerfectRing(void) {
+    if (perfectRingFramesRemaining == 0)
+        return;
+
+    float progress = 1.f - (float)perfectRingFramesRemaining / PERFECT_RING_DURATION_FRAMES;
+    float easedProgress = 1.f - (1.f - progress) * (1.f - progress);
+    float size = 1.f + (PERFECT_RING_GROWTH - 1.f) * easedProgress;
+
+    node_resetTranform(perfectRingBlackNode);
+    matrix_scaleByAndAddTranslation(perfectRingBlackNode,
+        perfectRingXScale * size,
+        1.f,
+        perfectRingZScale * size,
+        perfectRingX,
+        PERFECT_RING_Y,
+        perfectRingZ);
+
+    node_resetTranform(perfectRingWhiteNode);
+    matrix_scaleByAndAddTranslation(perfectRingWhiteNode,
+        perfectRingXScale * size * PERFECT_RING_WHITE_SCALE,
+        1.f,
+        perfectRingZScale * size * PERFECT_RING_WHITE_SCALE,
+        perfectRingX,
+        PERFECT_RING_Y,
+        perfectRingZ);
+
+    if (--perfectRingFramesRemaining == 0) {
+        Scene3DNode_setVisible(perfectRingBlackNode, 0);
+        Scene3DNode_setVisible(perfectRingWhiteNode, 0);
+    }
 }
 
 static void initSceneAndCamera(void) {
@@ -162,6 +234,9 @@ static void resetGame(void) {
     Game.StackzData.perfectCount = 0;
     animStarted = 0;
     bounce = 0.f;
+    perfectRingFramesRemaining = 0;
+    Scene3DNode_setVisible(perfectRingBlackNode, 0);
+    Scene3DNode_setVisible(perfectRingWhiteNode, 0);
     node_resetTranform(activeNodeSubnode);
     resetStack();
 }
@@ -172,6 +247,7 @@ void initStackzSceneData(void) {
     initSceneAndCamera();
     initNodes();
     initActiveBox();
+    initPerfectRing();
     initStack();
 }
 
@@ -263,6 +339,7 @@ static void buttonB(void) {
     float *targetCenter = direction == 0 ? &targetBoxX : &targetBoxZ;
     float *targetScale = direction == 0 ? &targetBoxXScale : &targetBoxZScale;
     float difference = fabsf(Game.StackzData.activeOscillator - *targetCenter);
+    int isPerfect = difference <= PERFECT_TOLERANCE;
 
     // Touching edges have no overlap, so do not create a zero-size block.
     if (difference >= *targetScale * 2.f) {
@@ -273,7 +350,7 @@ static void buttonB(void) {
     sys->logToConsole("hit");
     Game.StackzData.score++;
 
-    if (difference <= PERFECT_TOLERANCE) {
+    if (isPerfect) {
         sys->logToConsole("perfect");
         Game.StackzData.perfectCount++;
         if (Game.StackzData.perfectCount >= 3) {
@@ -290,6 +367,8 @@ static void buttonB(void) {
 
     addBoxToStack(targetBoxX, -targetBoxZ, targetBoxXScale, targetBoxZScale);
     updateActiveBlockSize(targetBoxX, -targetBoxZ, targetBoxXScale, targetBoxZScale);
+    if (isPerfect)
+        emitPerfectRing();
 
     direction = !direction;
 
@@ -467,6 +546,7 @@ void updateStackz() {
         drawBackground();
         handleRotation();
         handleButtonPush();
+        updatePerfectRing();
 
         setupOscillator();
         OscillateActiveNode();
