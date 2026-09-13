@@ -55,7 +55,6 @@ typedef struct
         Shape3D *activebox1;
 
         Scene3DNode *rootNode;
-        Scene3DNode *stackNode;
         Scene3DNode *activeNode;
 
         Shape3D *stackBoxes[STACKMAX];

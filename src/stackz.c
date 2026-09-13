@@ -15,7 +15,7 @@ static Scene3DNode *rootNode;
 static Scene3DNode *rotationNode;
 static Scene3DNode *activeNode;
 static Scene3DNode *activeNodeSubnode;
-static Scene3DNode *stackNode;
+static Scene3DNode *stackParentNode;
 
 static Shape3D *activeBox;
 
@@ -53,7 +53,7 @@ static void addBoxToStack(float x, float z, float scalex, float scalez) {
     addv += 0.5f;
     matrix_scaleByAndAddTranslation(Game.StackzData.currentNode->scene3DNode, scalex, 1.f, scalez, x, addv, z);
     Game.StackzData.stackNodeMatrix = matrix_addTranslation(0.f, -0.5f, 0.f);
-    Scene3DNode_addTransform(stackNode, stackNodeMatrix);
+    Scene3DNode_addTransform(stackParentNode, stackNodeMatrix);
     Game.StackzData.stackBoxIndex++;
 }
 
@@ -74,7 +74,7 @@ static void initNodes(void) {
     rotationNode = Game.StackzData.activeNode = Scene3DNode_newChild(rootNode);
     activeNode = Game.StackzData.activeNode = Scene3DNode_newChild(rotationNode);
     activeNodeSubnode = Scene3DNode_newChild(activeNode);
-    stackNode = Game.StackzData.stackNode = Scene3DNode_newChild(rotationNode);
+    stackParentNode = Scene3DNode_newChild(rotationNode);
     matrix_updateRotation(Game.StackzData.crankMatrix, leftrightrotation, 0.f, 1.f, 0.f);
     Scene3DNode_addTransform(rotationNode, Game.StackzData.crankMatrix);
 #ifdef BORDER
@@ -111,7 +111,7 @@ static void initStack(void) {
     struct Node* ptr = Game.StackzData.firstNode;
     do {
         //create shape
-        ptr->scene3DNode = Game.StackzData.stackNode = Scene3DNode_newChild(stackNode);
+        ptr->scene3DNode = Scene3DNode_newChild(stackParentNode);
         Shape3D *shape = shape_new_cuboid(1.f,0.25f,1.f,0.0f);
         Scene3DNode_addShape(ptr->scene3DNode, shape);
         Scene3DNode_setVisible(ptr->scene3DNode, 0);
@@ -123,7 +123,7 @@ static void initStack(void) {
     Scene3DNode_setVisible(ptr->scene3DNode, 1);
     Game.StackzData.stackNodeMatrix = matrix_addTranslation(0,-0.5,0);
     stackNodeMatrix = &Game.StackzData.stackNodeMatrix;
-    Scene3DNode_addTransform(stackNode, stackNodeMatrix);
+    Scene3DNode_addTransform(stackParentNode, stackNodeMatrix);
 }
 
 static void resetStack(void) {
@@ -132,7 +132,13 @@ static void resetStack(void) {
         Scene3DNode_setVisible(ptr->scene3DNode, 0);
         ptr = ptr->next;
     } while (ptr != Game.StackzData.lastNode->next);
-    addBoxToStack(0.f, 0.f, 1.f, 1.f);
+
+    // Restore the same parent offset and base node used for the first round.
+    // addBoxToStack() intentionally accumulates this offset while a round runs.
+    Game.StackzData.stackNodeMatrix = matrix_addTranslation(0.f, -0.5f, 0.f);
+    Scene3DNode_setTransform(stackParentNode, &Game.StackzData.stackNodeMatrix);
+    Game.StackzData.currentNode = Game.StackzData.firstNode;
+    Scene3DNode_setVisible(Game.StackzData.currentNode->scene3DNode, 1);
 
 }
 
@@ -380,15 +386,35 @@ static void draw(void) {
 	gfx->markUpdatedRows(0, LCD_ROWS-1);
 }
 
-static char* score;
-static int ww = 0;
+static char score[12];
 int scorewidth = 0;
+
+static int formatScore(int value) {
+    char digits[10];
+    unsigned int magnitude = value < 0 ? 0u - (unsigned int)value : (unsigned int)value;
+    int digitCount = 0;
+    int length = 0;
+
+    do {
+        digits[digitCount++] = '0' + magnitude % 10;
+        magnitude /= 10;
+    } while (magnitude > 0);
+
+    if (value < 0)
+        score[length++] = '-';
+
+    while (digitCount > 0)
+        score[length++] = digits[--digitCount];
+
+    score[length] = '\0';
+    return length;
+}
+
 static void displayScore(void) {
     gfx->setFont(Game.font14);
-    ww = sys->formatString(&score,"%d",Game.StackzData.score);
-    scorewidth = gfx->getTextWidth(Game.font, score, strlen(score),kASCIIEncoding,0);
-    gfx->drawText(score, strlen(score), kASCIIEncoding, SCREEN_WIDTH/2-(scorewidth/2), 15);
-    sys->realloc(score, 0);
+    int scoreLength = formatScore(Game.StackzData.score);
+    scorewidth = gfx->getTextWidth(Game.font, score, scoreLength, kASCIIEncoding, 0);
+    gfx->drawText(score, scoreLength, kASCIIEncoding, SCREEN_WIDTH/2-(scorewidth/2), 15);
 }
 
 static float outBounce(float x) {
