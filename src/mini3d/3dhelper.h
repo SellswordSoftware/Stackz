@@ -24,6 +24,8 @@ Scene3D *scene_new(void);
 
 void scene_setCameraOrigin(Scene3D *scene, float x, float y, float z);
 
+void scene_setCameraView(Scene3D *scene, float x, float y, float z, float ux, float uy, float uz);
+
 void scene_setCameraUp(Scene3D *scene, float x, float y, float z, float ux, float uy, float uz);
 
 void scene_setLight(Scene3D *scene, float x, float y, float z);

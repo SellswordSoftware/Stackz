@@ -20,7 +20,7 @@ void scene_setCameraOrigin(Scene3D *scene, float x, float y, float z)
     Scene3D_setCamera(scene, cameraOrigin, cameraLookat, cameraScale, cameraUp);
 }
 
-void scene_setCameraUp(Scene3D *scene, float x, float y, float z, float ux, float uy, float uz)
+void scene_setCameraView(Scene3D *scene, float x, float y, float z, float ux, float uy, float uz)
 {
     cameraOrigin.x = x;
     cameraOrigin.y = y;
@@ -29,6 +29,11 @@ void scene_setCameraUp(Scene3D *scene, float x, float y, float z, float ux, floa
     cameraUp.dy = uy;
     cameraUp.dz = uz;
     Scene3D_setCamera(scene, cameraOrigin, cameraLookat, cameraScale, cameraUp);
+}
+
+void scene_setCameraUp(Scene3D *scene, float x, float y, float z, float ux, float uy, float uz)
+{
+    scene_setCameraView(scene, x, y, z, ux, uy, uz);
 }
 
 void scene_setLight(Scene3D *scene, float x, float y, float z)

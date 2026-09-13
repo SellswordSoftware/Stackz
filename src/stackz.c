@@ -14,6 +14,9 @@
 #define PERFECT_RING_GROWTH 1.75f
 #define PERFECT_RING_Y -0.255f
 #define PERFECT_RING_WHITE_SCALE 0.92f
+#define GRAVITY_DEAD_ZONE 0.08f
+#define GRAVITY_RESPONSE 0.12f
+#define PI 3.14159265358979323846f
 
 static Scene3D *scene;
 static Scene3DNode *rootNode;
@@ -45,6 +48,9 @@ static float perfectRingX = 0.f;
 static float perfectRingZ = 0.f;
 static float perfectRingXScale = 1.f;
 static float perfectRingZScale = 1.f;
+static float gravityUpX = 0.f;
+static float gravityUpY = -1.f;
+static float gravityUpAngle = -PI / 2.f;
 
 static float zoom = 5.f;
 
@@ -492,38 +498,44 @@ static void displayGameOver(void) {
 static float accelx;
 static float accely;
 static float accelz;
-static float smoothing = 0.9f;
-static float shiftx = 0.0f;
-void handleRotation(void) {
+static void handleRotation(void) {
 	sys->getAccelerometer(&accelx, &accely, &accelz);
-	//pd->system->logToConsole("Accel data: x(%f) y(%f) z(%f)\r", accelx, accely, accelz);
-	shiftx = smoothing * shiftx + (1-smoothing) * accelx;
-	//pd->system->logToConsole("shiftx: %f\r", shiftx);
-	//activebox1->points->x = res;
 
-	//activeNode->transform.dz = res;
+    float magnitude = sqrtf(accelx * accelx + accely * accely);
+    float desiredUpAngle = -PI / 2.f;
 
-	//angle = sys->getCrankChange();
+    // When the device is nearly face-up, gravity has no stable screen direction.
+    if (magnitude >= GRAVITY_DEAD_ZONE) {
+#if defined(TARGET_SIMULATOR)
+        desiredUpAngle = atan2f(-accely, -accelx);
+#else
+        desiredUpAngle = atan2f(accely, accelx);
+#endif
+    }
 
-	//matrix_updateRotation(Game.StackzData.updownMatrix, shiftx*90,0.f,0.f,1.f);
-	//Scene3DNode_setTransform(rootNode, Game.StackzData.updownMatrix);
+    float angleDifference = desiredUpAngle - gravityUpAngle;
+    if (angleDifference > PI)
+        angleDifference -= 2.f * PI;
+    else if (angleDifference < -PI)
+        angleDifference += 2.f * PI;
+
+    gravityUpAngle += angleDifference * GRAVITY_RESPONSE;
+    gravityUpX = cosf(gravityUpAngle);
+    gravityUpY = sinf(gravityUpAngle);
 }
 
 static void zoomCameraWithCrank(void) {
     Game.StackzData.crankChange = sys->getCrankChange() / 50.f;
 
-    // sys->logToConsole("shiftx: %f", (double)shiftx);
-
-    float rotty = shiftx * -5.f;
     zoom -= Game.StackzData.crankChange;
     if (zoom > 10.f)
         zoom = 10.f;
     if (zoom < 2.f)
         zoom = 2.f;
     if (zoom*1.2f - (updownrotation) < 0.1f) {
-        scene_setCameraUp(scene, 0.f, zoom*1.f + updownrotation, 0.1f, rotty,-1.f,0.f);
+        scene_setCameraView(scene, 0.f, zoom*1.f + updownrotation, 0.1f, gravityUpX, gravityUpY, 0.f);
     } else {
-        scene_setCameraUp(scene, 0.f, zoom*1.f + updownrotation, zoom*1.2f - (updownrotation), rotty,-1.f,0.f);
+        scene_setCameraView(scene, 0.f, zoom*1.f + updownrotation, zoom*1.2f - (updownrotation), gravityUpX, gravityUpY, 0.f);
     }
 }
 
