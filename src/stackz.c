@@ -1,5 +1,9 @@
 #include "stackz.h"
 
+#include "pdna_effects.h"
+#include "pdna_gameover.h"
+#include "song1.h"
+
 #include "lcdpatterns.h"
 #include "mini3d.h"
 #include "3dmath.h"
@@ -47,6 +51,7 @@ static float targetBoxX = 0.f;
 static float targetBoxZ = 0.f;
 static float targetBoxXScale = 1.f;
 static float targetBoxZScale = 1.f;
+static float displayedActiveOscillator = 0.f;
 static int isFirstLoop = 0;
 static int direction = 0;
 static int animStarted = 0;
@@ -216,11 +221,11 @@ static void initActiveBox(void) {
 
 static void initStack(void) {
     if(Game.StackzData.lastNode == NULL) {
-        sys->logToConsole("List is empty");
+        // sys->logToConsole("List is empty");
         return;
     }
     if(Game.StackzData.lastNode->next != Game.StackzData.firstNode) {
-        sys->logToConsole("List is not circular empty");
+        // sys->logToConsole("List is not circular empty");
         return;
     }
     struct Node* ptr = Game.StackzData.firstNode;
@@ -247,6 +252,9 @@ static void resetStack(void) {
     struct Node* ptr = Game.StackzData.firstNode;
     do {
         Scene3DNode_setVisible(ptr->scene3DNode, 0);
+        node_resetTranform(ptr->scene3DNode);
+        ptr->restingColorBias = getColorFromIndex(0);
+        Scene3DNode_setColorBias(ptr->scene3DNode, TOP_BOX_COLOR_BIAS);
         ptr = ptr->next;
     } while (ptr != Game.StackzData.lastNode->next);
 
@@ -312,7 +320,7 @@ static void drawBackground(void)
         gfx->fillEllipse(20, 0, 360, 240, 0.0, 0.0, kColorWhite);
         bg = gfx->copyFrameBufferBitmap();
         bgcreated=1;
-        sys->logToConsole("creating background");
+        // sys->logToConsole("creating background");
     } else {
         gfx->drawBitmap(bg, 0, 0, kBitmapUnflipped);
     }
@@ -330,14 +338,14 @@ static void buttonUp(void) {
     updownrotation += 0.5f;
     if (updownrotation > 5.f)
         updownrotation = 5.f;
-    sys->logToConsole("Up pressed");
+    // sys->logToConsole("Up pressed");
 }
 
 static void buttonDown(void) {
     updownrotation -= 0.5f;
     if (updownrotation < -5.f)
         updownrotation = -5.f;
-    sys->logToConsole("Down pressed");
+    // sys->logToConsole("Down pressed");
 }
 
 static void buttonLeft(void) {
@@ -350,12 +358,6 @@ static void buttonRight(void) {
     leftrightrotation = -10.f;
     matrix_updateRotation(Game.StackzData.crankMatrix, leftrightrotation, 0.f, 1.f, 0.f);
     Scene3DNode_addTransform(rootNode, Game.StackzData.crankMatrix);
-}
-
-static void buttonB(void);
-
-static void buttonA(void) {
-    buttonB();
 }
 
 #define PERFECT_TOLERANCE 0.15f
@@ -381,31 +383,47 @@ static void growSmallerAxis(void) {
 static void buttonB(void) {
     float *targetCenter = direction == 0 ? &targetBoxX : &targetBoxZ;
     float *targetScale = direction == 0 ? &targetBoxXScale : &targetBoxZScale;
-    float difference = fabsf(Game.StackzData.activeOscillator - *targetCenter);
+    float activeCenter = *targetCenter + displayedActiveOscillator;
+    float targetLeft = *targetCenter - *targetScale;
+    float targetRight = *targetCenter + *targetScale;
+    float activeLeft = activeCenter - *targetScale;
+    float activeRight = activeCenter + *targetScale;
+    float overlapLeft = fmaxf(targetLeft, activeLeft);
+    float overlapRight = fminf(targetRight, activeRight);
+    float difference = fabsf(activeCenter - *targetCenter);
     int isPerfect = difference <= PERFECT_TOLERANCE;
 
     // Touching edges have no overlap, so do not create a zero-size block.
-    if (difference >= *targetScale * 2.f) {
+    if (overlapRight <= overlapLeft) {
         Game.StackzData.gameover = 1;
+        PlayPdnaSongOnce(&pdna_over);
+        PlayPdnaEffect(&pdna_effect_stack_miss);
         return;
     }
 
-    sys->logToConsole("hit");
+    // sys->logToConsole("hit");
     Game.StackzData.score++;
 
     if (isPerfect) {
-        sys->logToConsole("perfect");
+        // sys->logToConsole("perfect");
+        if (Game.StackzData.perfectCount == 0) {
+            PlayPdnaEffect(&pdna_effect_perfect_stack);
+        } else if (Game.StackzData.perfectCount == 1) {
+            PlayPdnaEffect(&pdna_effect_perfect_stack_2);
+        } else {
+            PlayPdnaEffect(&pdna_effect_perfect_growth);
+        }
         Game.StackzData.perfectCount++;
         if (Game.StackzData.perfectCount >= 3) {
-            sys->logToConsole("grow");
+            // sys->logToConsole("grow");
             Game.StackzData.perfectCount = 0;
             growSmallerAxis();
         }
     } else {
+        PlayPdnaEffect(&pdna_effect_stack_land);
         Game.StackzData.perfectCount = 0;
-        float scale = 1.f - difference / (*targetScale * 2.f);
-        *targetScale *= scale;
-        *targetCenter = (Game.StackzData.activeOscillator + *targetCenter) / 2.f;
+        *targetScale = (overlapRight - overlapLeft) * 0.5f;
+        *targetCenter = (overlapLeft + overlapRight) * 0.5f;
     }
 
     addBoxToStack(targetBoxX, -targetBoxZ, targetBoxXScale, targetBoxZScale);
@@ -431,10 +449,9 @@ static void handleButtonPush(void) {
 		buttonLeft();
     if ( pushed & kButtonRight || current & kButtonRight )
 		buttonRight();
-    if ( pushed & kButtonA )
-		buttonA();
-    if ( pushed & kButtonB )
+    if (pushed & (kButtonA | kButtonB)) {
 		buttonB();
+    }
 }
 
 static void setupOscillator(void) {
@@ -445,6 +462,7 @@ static void setupOscillator(void) {
 }
 
 static void OscillateActiveNode(void) {
+    displayedActiveOscillator = Game.StackzData.activeOscillator;
     if (direction == 0) {
         Game.StackzData.activeNodeMatrix = matrix_addTranslation(Game.StackzData.activeOscillator,0.f,0.f);
         Scene3DNode_setTransform(activeNode, &Game.StackzData.activeNodeMatrix);
@@ -574,7 +592,7 @@ static void handleRotation(void) {
     // When the device is nearly face-up, gravity has no stable screen direction.
     if (magnitude >= GRAVITY_DEAD_ZONE) {
 #if defined(TARGET_PLAYDATE)
-        desiredUpAngle = atan2f(accely, accelx);
+        desiredUpAngle = atan2f(-accely, -accelx);
 #else
         desiredUpAngle = atan2f(-accely, -accelx);
 #endif
@@ -610,7 +628,7 @@ int isFlipped=1;
 void flipCamera(void) {
 	if(isFlipped == 0){
 		isFlipped = 1;
-		sys->logToConsole("flipped");
+		// sys->logToConsole("flipped");
 		scene_setCameraUp(scene, 0.f, 5.f, 6.f, 5.f,0.f,0.f);
 	} else {
 		isFlipped = 0;
@@ -624,11 +642,14 @@ void updateStackz() {
     if(Game.StackzData.gameover == 0){
         drawBackground();
         handleRotation();
-        handleButtonPush();
-        updatePerfectRing();
 
-        setupOscillator();
-        OscillateActiveNode();
+        handleButtonPush();
+        if (Game.StackzData.gameover == 0) {
+            setupOscillator();
+            OscillateActiveNode();
+        }
+
+        updatePerfectRing();
 
         zoomCameraWithCrank();
 
@@ -643,7 +664,8 @@ void updateStackz() {
 
         sys->getButtonState(NULL, &pushed, NULL);
 
-        if ( pushed ) {
+        if (pushed & (kButtonA | kButtonB)) {
+            PlayPdnaSongLoop(&song1);
             Game.StackzData.gameover = 0;
             resetGame();
         }

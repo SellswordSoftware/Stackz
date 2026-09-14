@@ -9,10 +9,15 @@ __declspec(dllexport)
 #endif
 int eventHandler(PlaydateAPI* playdate, PDSystemEvent event, uint32_t arg)
 {
+	(void)arg;
 	if ( event == kEventInit )
 	{
 		InitGame(playdate);
 		playdate->system->setUpdateCallback(Update, NULL);
+	}
+	else if (event == kEventTerminate)
+	{
+		DeinitGame();
 	}
 	
 	return 0;

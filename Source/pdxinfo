@@ -3,5 +3,5 @@ author=SellswordSoftwareLLC
 description=A game of stacking blocks
 bundleID=com.sellsword.stackz
 imagePath=launcher
-version=0.1.0
-buildNumber=1
+version=1.0
+buildNumber=44

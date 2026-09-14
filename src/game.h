@@ -7,6 +7,7 @@
 #include "3dmath.h"
 #include "shape.h"
 #include "scene.h"
+#include "pdna_audio.h"
 
 #define SCREEN_WIDTH 400
 #define SCREEN_HEIGHT 240
@@ -43,6 +44,8 @@ typedef struct
 {
     PlaydateAPI *gPd;
     GameScene gState;
+    PdnaAudio audio;
+    bool audio_initialized;
 
     const char* fontpath;
     LCDFont* font;
@@ -85,6 +88,10 @@ typedef struct
 extern GameStruct Game;
 
 void InitGame(PlaydateAPI *pd);
+void DeinitGame(void);
+void PlayPdnaEffect(const PdnaEffectPreset *preset);
+void PlayPdnaSongOnce(const PdnaSongPreset *song);
+void PlayPdnaSongLoop(const PdnaSongPreset *song);
 int Update(void *userdata);
 
 #endif

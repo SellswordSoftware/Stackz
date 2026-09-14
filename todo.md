@@ -3,13 +3,11 @@ Stuff To Do:
 
 Sound
 ------
-[] background music
-[] bassy sound effect for when you place the block
-[] if block is perfect play an asceding tone 
-[] play a special sound effect when 5 perfects are done to grow the block
-[] sound at menu
-[] starting a new game sfx
-[] game over sfx
+[x] background music
+[x] bassy sound effect for when you place the block
+[x] if block is perfect play an asceding tone 
+[x] play a special sound effect when 3 perfects are done to grow the block
+[x] game over sfx
 
 mechanics
 ----------

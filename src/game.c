@@ -1,6 +1,7 @@
 #include "game.h"
 #include "stackz.h"
 #include "menu.h"
+#include "song1.h"
 
 const struct playdate_graphics* gfx = NULL;
 const struct playdate_sys* sys = NULL;
@@ -62,6 +63,18 @@ void InitGame(PlaydateAPI* pd)
 	file = Game.gPd->file;
 	sound = Game.gPd->sound;
 
+	PdnaAudioResult audio_result = pdna_audio_init(
+		&Game.audio,
+		sound,
+		&song1
+	);
+	if (audio_result == PDNA_AUDIO_OK) {
+		Game.audio_initialized = true;
+		pdna_audio_start_music(&Game.audio);
+	} else {
+		sys->logToConsole("PDNA audio initialization failed: %d", audio_result);
+	}
+
 	initFont();
 
 	initCircularLinkedListOfStack();
@@ -69,8 +82,48 @@ void InitGame(PlaydateAPI* pd)
 	initStackzSceneData();
 }
 
+void DeinitGame(void)
+{
+	if (Game.audio_initialized) {
+		pdna_audio_deinit(&Game.audio);
+		Game.audio_initialized = false;
+	}
+}
+
+void PlayPdnaEffect(const PdnaEffectPreset *preset)
+{
+	if (Game.audio_initialized) {
+		pdna_audio_play_effect(&Game.audio, preset);
+	}
+}
+
+void PlayPdnaSongOnce(const PdnaSongPreset *song)
+{
+	if (!Game.audio_initialized) {
+		return;
+	}
+
+	PdnaAudioResult result = pdna_audio_play_song_once(&Game.audio, song);
+	if (result != PDNA_AUDIO_OK) {
+		sys->logToConsole("PDNA one-shot song initialization failed: %d", result);
+	}
+}
+
+void PlayPdnaSongLoop(const PdnaSongPreset *song)
+{
+	if (!Game.audio_initialized) {
+		return;
+	}
+
+	PdnaAudioResult result = pdna_audio_play_song_loop(&Game.audio, song);
+	if (result != PDNA_AUDIO_OK) {
+		sys->logToConsole("PDNA looping song initialization failed: %d", result);
+	}
+}
+
 int Update(void* userdata)
 {
+	(void)userdata;
 	switch (Game.gState)
 	{
 	case State_Menu:
